@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-15
+
 ### Added
 
 - Muller Intuitiv radiators through the intuis Connect cloud: sign in with the
@@ -30,3 +32,6 @@ the notes of the version's GitHub Release.
   itself, and right after each command.
 - English, French, German and Spanish everywhere, with the documentation in the
   four languages.
+
+[Unreleased]: https://github.com/guim31/gladys-intuis/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/guim31/gladys-intuis/releases/tag/v1.0.1
