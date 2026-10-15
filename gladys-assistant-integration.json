@@ -1,177 +1,467 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Muller Intuitiv (intuis)",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Muller Intuitiv radiators through the intuis Connect cloud: rooms, setpoints, modes, consumption.",
+    "fr": "Radiateurs Muller Intuitiv via le cloud intuis Connect : pièces, consignes, modes, consommation.",
+    "de": "Muller-Intuitiv-Heizkörper über die intuis-Connect-Cloud: Räume, Sollwerte, Modi, Verbrauch.",
+    "es": "Radiadores Muller Intuitiv con la nube intuis Connect: habitaciones, consignas, modos, consumo."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
-  "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "docker_image": "ghcr.io/guim31/gladys-intuis:1.0.0",
+  "gladys_version": ">=5.2.0",
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-intuis/main/cover.png",
+  "categories": ["climate", "energy"],
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your intuis Connect account",
+        "fr": "Votre compte intuis Connect",
+        "de": "Dein intuis-Connect-Konto",
+        "es": "Su cuenta intuis Connect"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Enter the e-mail and the password you use in the intuis Connect app (formerly Muller Intuitiv with Netatmo). Gladys then finds every room of your home: open the Discovery tab.",
+        "fr": "Saisissez l'e-mail et le mot de passe de l'appli intuis Connect (anciennement Muller Intuitiv with Netatmo). Gladys trouve ensuite chaque pièce du logement : ouvrez l'onglet Découverte.",
+        "de": "Gib die E-Mail-Adresse und das Passwort der intuis-Connect-App ein (früher Muller Intuitiv with Netatmo). Gladys findet dann jeden Raum deines Zuhauses: Öffne den Tab „Entdecken“.",
+        "es": "Introduzca el correo y la contraseña de la app intuis Connect (antes Muller Intuitiv with Netatmo). Gladys encontrará cada habitación de su vivienda: abra la pestaña Descubrir."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/guim31/gladys-intuis/blob/main/docs/fr.md",
+          "label": {
+            "en": "Setup guide",
+            "fr": "Guide d'installation",
+            "de": "Installationsanleitung",
+            "es": "Guía de instalación"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "username",
+      "type": "string",
+      "label": {
+        "en": "E-mail",
+        "fr": "E-mail",
+        "de": "E-Mail",
+        "es": "Correo electrónico"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "placeholder": {
+        "en": "you@example.com",
+        "fr": "vous@exemple.fr",
+        "de": "du@beispiel.de",
+        "es": "usted@ejemplo.es"
+      },
+      "required": true
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "password",
+      "type": "secret",
+      "label": {
+        "en": "Password",
+        "fr": "Mot de passe",
+        "de": "Passwort",
+        "es": "Contraseña"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "Kept by Gladys, only sent to intuis to sign in.",
+        "fr": "Gardé par Gladys, envoyé seulement à intuis pour se connecter.",
+        "de": "Bleibt in Gladys, wird nur zur Anmeldung an intuis gesendet.",
+        "es": "Guardada por Gladys, solo se envía a intuis para iniciar sesión."
+      },
+      "required": true
     },
     {
-      "key": "unit",
+      "key": "manual_duration",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "label": {
+        "en": "Duration of a setpoint set from Gladys",
+        "fr": "Durée d'une consigne réglée depuis Gladys",
+        "de": "Dauer einer in Gladys gesetzten Solltemperatur",
+        "es": "Duración de una consigna fijada desde Gladys"
+      },
+      "description": {
+        "en": "Then the room returns to its programme, as with the + and - of the app.",
+        "fr": "Ensuite la pièce revient à son programme, comme avec le + et le - de l'appli.",
+        "de": "Danach kehrt der Raum zu seinem Zeitplan zurück, wie mit + und - in der App.",
+        "es": "Después la habitación vuelve a su programación, como con el + y el - de la app."
+      },
+      "default": "default",
       "required": false,
-      "default": "celsius",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "default",
+          "label": {
+            "en": "As set in the intuis app",
+            "fr": "Comme dans l'appli intuis",
+            "de": "Wie in der intuis-App",
+            "es": "Como en la app intuis"
+          }
+        },
+        {
+          "value": "30",
+          "label": {
+            "en": "30 minutes",
+            "fr": "30 minutes",
+            "de": "30 Minuten",
+            "es": "30 minutos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "1 hour",
+            "fr": "1 heure",
+            "de": "1 Stunde",
+            "es": "1 hora"
+          }
+        },
+        {
+          "value": "120",
+          "label": {
+            "en": "2 hours",
+            "fr": "2 heures",
+            "de": "2 Stunden",
+            "es": "2 horas"
+          }
+        },
+        {
+          "value": "180",
+          "label": {
+            "en": "3 hours",
+            "fr": "3 heures",
+            "de": "3 Stunden",
+            "es": "3 horas"
+          }
+        },
+        {
+          "value": "240",
+          "label": {
+            "en": "4 hours",
+            "fr": "4 heures",
+            "de": "4 Stunden",
+            "es": "4 horas"
+          }
+        },
+        {
+          "value": "360",
+          "label": {
+            "en": "6 hours",
+            "fr": "6 heures",
+            "de": "6 Stunden",
+            "es": "6 horas"
+          }
+        },
+        {
+          "value": "480",
+          "label": {
+            "en": "8 hours",
+            "fr": "8 heures",
+            "de": "8 Stunden",
+            "es": "8 horas"
+          }
+        },
+        {
+          "value": "720",
+          "label": {
+            "en": "12 hours",
+            "fr": "12 heures",
+            "de": "12 Stunden",
+            "es": "12 horas"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
-      "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+      "key": "energy",
+      "type": "boolean",
+      "label": {
+        "en": "Track the consumption of each room",
+        "fr": "Suivre la consommation de chaque pièce",
+        "de": "Verbrauch jedes Raums erfassen",
+        "es": "Seguir el consumo de cada habitación"
       },
+      "description": {
+        "en": "When your radiators measure it. Read once an hour, with a delay of up to a day.",
+        "fr": "Quand vos radiateurs la mesurent. Lue une fois par heure, avec jusqu'à un jour de retard.",
+        "de": "Wenn deine Heizkörper ihn messen. Einmal pro Stunde gelesen, bis zu einem Tag verzögert.",
+        "es": "Cuando sus radiadores lo miden. Se lee una vez por hora, con hasta un día de retraso."
+      },
+      "default": true,
+      "required": false
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the feature names",
+        "fr": "Langue des noms de fonctionnalités",
+        "de": "Sprache der Funktionsnamen",
+        "es": "Idioma de los nombres de funciones"
+      },
+      "description": {
+        "en": "Used for the devices added from now on.",
+        "fr": "Appliquée aux appareils ajoutés ensuite.",
+        "de": "Gilt für die danach hinzugefügten Geräte.",
+        "es": "Se aplica a los dispositivos añadidos después."
+      },
+      "default": "fr",
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
-    }
-  ],
-  "scene_triggers": [
-    {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
-      "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
       },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
-        }
-      ],
-      "variables": [
-        {
-          "key": "target",
-          "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
-        }
-      ]
+      "timeout_seconds": 60
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "set_room_setpoint",
+      "label": {
+        "en": "Set a room setpoint for a while",
+        "fr": "Régler la consigne d'une pièce pour un temps",
+        "de": "Solltemperatur eines Raums auf Zeit setzen",
+        "es": "Fijar la consigna de una habitación un tiempo"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "Holds a temperature in a room, then the room returns to its programme.",
+        "fr": "Maintient une température dans une pièce, puis la pièce revient à son programme.",
+        "de": "Hält eine Temperatur in einem Raum, danach kehrt er zu seinem Zeitplan zurück.",
+        "es": "Mantiene una temperatura en una habitación y luego vuelve a su programación."
+      },
+      "timeout_seconds": 30,
       "fields": [
         {
-          "key": "device",
+          "key": "room",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
+          "label": {
+            "en": "Room",
+            "fr": "Pièce",
+            "de": "Raum",
+            "es": "Habitación"
+          },
           "required": true
+        },
+        {
+          "key": "temperature",
+          "type": "string",
+          "label": {
+            "en": "Temperature (°C)",
+            "fr": "Température (°C)",
+            "de": "Temperatur (°C)",
+            "es": "Temperatura (°C)"
+          },
+          "description": {
+            "en": "From 7 to 30, by half a degree.",
+            "fr": "De 7 à 30, au demi-degré.",
+            "de": "Von 7 bis 30, in halben Grad.",
+            "es": "De 7 a 30, por medio grado."
+          },
+          "placeholder": {
+            "en": "e.g. 20.5",
+            "fr": "ex. 20,5",
+            "de": "z. B. 20,5",
+            "es": "p. ej. 20,5"
+          },
+          "required": true
+        },
+        {
+          "key": "duration",
+          "type": "select",
+          "label": {
+            "en": "For",
+            "fr": "Pendant",
+            "de": "Für",
+            "es": "Durante"
+          },
+          "default": "default",
+          "required": false,
+          "options": [
+            {
+              "value": "default",
+              "label": {
+                "en": "As set in the intuis app",
+                "fr": "Comme dans l'appli intuis",
+                "de": "Wie in der intuis-App",
+                "es": "Como en la app intuis"
+              }
+            },
+            {
+              "value": "30",
+              "label": {
+                "en": "30 minutes",
+                "fr": "30 minutes",
+                "de": "30 Minuten",
+                "es": "30 minutos"
+              }
+            },
+            {
+              "value": "60",
+              "label": {
+                "en": "1 hour",
+                "fr": "1 heure",
+                "de": "1 Stunde",
+                "es": "1 hora"
+              }
+            },
+            {
+              "value": "120",
+              "label": {
+                "en": "2 hours",
+                "fr": "2 heures",
+                "de": "2 Stunden",
+                "es": "2 horas"
+              }
+            },
+            {
+              "value": "180",
+              "label": {
+                "en": "3 hours",
+                "fr": "3 heures",
+                "de": "3 Stunden",
+                "es": "3 horas"
+              }
+            },
+            {
+              "value": "240",
+              "label": {
+                "en": "4 hours",
+                "fr": "4 heures",
+                "de": "4 Stunden",
+                "es": "4 horas"
+              }
+            },
+            {
+              "value": "360",
+              "label": {
+                "en": "6 hours",
+                "fr": "6 heures",
+                "de": "6 Stunden",
+                "es": "6 horas"
+              }
+            },
+            {
+              "value": "480",
+              "label": {
+                "en": "8 hours",
+                "fr": "8 heures",
+                "de": "8 Stunden",
+                "es": "8 horas"
+              }
+            },
+            {
+              "value": "720",
+              "label": {
+                "en": "12 hours",
+                "fr": "12 heures",
+                "de": "12 Stunden",
+                "es": "12 horas"
+              }
+            }
+          ]
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "until",
+          "type": "string",
+          "label": {
+            "en": "Back to the programme at",
+            "fr": "Retour au programme à",
+            "de": "Zurück zum Zeitplan um",
+            "es": "Vuelta a la programación a las"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "rooms",
+      "label": {
+        "en": "Heating rooms",
+        "fr": "Pièces chauffées",
+        "de": "Beheizte Räume",
+        "es": "Habitaciones"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Temperature, setpoint and mode of every room, and the home mode in one tap.",
+        "fr": "Température, consigne et mode de chaque pièce, et le mode de la maison en un geste.",
+        "de": "Temperatur, Sollwert und Modus jedes Raums, und der Hausmodus mit einem Tipp.",
+        "es": "Temperatura, consigna y modo de cada habitación, y el modo de la casa en un toque."
+      },
+      "icon": "thermometer",
+      "settings": [
+        {
+          "key": "home",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Home",
+            "fr": "Logement",
+            "de": "Zuhause",
+            "es": "Vivienda"
+          },
+          "description": {
+            "en": "The home device, or any of its rooms. Empty: the first home.",
+            "fr": "L'appareil logement, ou une de ses pièces. Vide : le premier logement.",
+            "de": "Das Zuhause-Gerät oder einer seiner Räume. Leer: das erste Zuhause.",
+            "es": "El dispositivo vivienda o una de sus habitaciones. Vacío: la primera vivienda."
+          }
+        }
+      ],
+      "action_timeout_seconds": 30
     }
   ]
 }

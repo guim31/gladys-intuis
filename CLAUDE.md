@@ -31,16 +31,23 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+index.js                          SDK wiring only: registerHandlers(gladys) before connect()
+src/app.js                        every SDK handler (discovery, commands, poll fallback, action,
+                                  scene action, widget, config, lifecycle) -> the hub
+src/hub.js                        sign-in, 5-minute refresh timer, states, commands, energy
+src/devices.js                    homes and rooms -> Gladys devices, feature names, states
+src/intuis/client.js              HTTP client of the intuis cloud (OAuth2, endpoints, error kinds)
+src/intuis/model.js               pure reading of the answers (homes, room states, energy rows)
+src/widgets.js                    "rooms" dashboard widget (manifest `widgets`)
+src/scenes.js                     "set_room_setpoint" scene action (manifest `scene_actions`)
+src/i18n.js                       connection statuses and messages, four languages
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
+src/store.js, src/issues.js       /data/intuis-state.json; failures logged once
+scripts/probe.mjs                 read-only check against the real cloud (not in the image)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/                             node --test, SDK fake Gladys + test/helpers/fakeIntuis.js
+test/fixtures/intuis/             cloud answers (anonymized), gladys-feature-table.json
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +77,10 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** is in four languages (English, French, German with
+  "du", Spanish with "usted"): action messages, manifest texts, feature names,
+  widget texts, and `docs/en.md`, `docs/fr.md`, `docs/de.md`, `docs/es.md`
+  with the same sections. `test/i18n.test.js` enforces it.
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -233,3 +242,38 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Intégration intuis (Muller Intuitiv)
+
+**L'API.** Celle de Netatmo Energy, hébergée pour intuis sur `app.muller-intuitiv.net` (repli
+`app-prod.intuis-sas.com`). Connexion OAuth2 « password grant » avec les identifiants publics de
+l'appli intuis Connect (`client_id`/`client_secret`, `scope: read_muller write_muller`,
+`user_prefix: muller`) ; deux paires circulent dans la communauté, la seconde est essayée sur un
+`invalid_client`. Mauvais mot de passe : HTTP 400 `{"error":"invalid_grant"}`. Jeton expiré : 403
+`{"error":{"code":3}}` (2 = jeton invalide, 26 = quota atteint). Lectures : `GET /api/homesdata`
+(pièces, modules, `schedules` ou `therm_schedules` selon l'âge du compte, `therm_mode` de la maison),
+`POST /syncapi/v1/homestatus` (formulaire `home_id`), `POST /syncapi/v1/getconfigs` (durée par défaut
+d'une dérogation). Écritures : `POST /syncapi/v1/setstate` (JSON, `home.rooms[]`),
+`POST /api/setthermmode` (JSON `{ home_id, mode }`). Énergie : `POST /api/getroommeasure` en
+**formulaire** ; `gethomemeasure` est réservé à l'appli officielle (vide pour un tiers).
+
+**Pièges relevés (sans matériel, d'après les projets MIT cités dans le README) :**
+
+- Modes de pièce : `home` (programme), `manual` (avec `therm_setpoint_end_time`, 12 h au plus),
+  `away`, `hg` (hors-gel), `boost`, `off`. Modes de maison : `schedule`, `away`, `hg`. Côté Gladys 5.2 :
+  `thermostat/mode` (AUTO = programme, HEATING = consigne manuelle) et `thermostat/preset` (SCHEDULE,
+  FROST, AWAY) ; pendant une consigne manuelle, le preset montre ce qui reprendra.
+- `off` n'est jamais proposé en écriture (risque de gel) : le hors-gel est l'arrêt sûr.
+- La chauffe en cours vient du `radiator_state` des modules NMH ; un radiateur fil pilote (FPN) n'en
+  donne pas : ne rien inventer à partir des températures.
+- Mesures d'énergie : une colonne par type demandé (total, puis `$0`, `$1`, `$2` = périodes
+  tarifaires) ; seule la période en cours est remplie, deux sur une journée HP/HC. Additionner les
+  périodes, ne prendre le total que si aucune ne l'est, sinon double comptage. Netatmo date une ligne
+  au **milieu** de son intervalle : arrondir au créneau. Valeurs en Wh.
+- La consommation part par `publishEnergyConsumption` (`thirty-minutes-consumption` ou
+  `daily-consumption`), jamais par `publishStates` : intervalles **écoulés** seulement, alignés sur
+  30 min, au plus 2 000 par appel, l'appareil doit être créé (404 sinon).
+- Les fonctionnalités facultatives d'une pièce (chauffe, fenêtre, présence, énergie) sont retenues
+  dans `/data` dès qu'elles ont été vues : une réponse qui saute un champ ne change pas la structure.
+- Le proxy des sessions de code refuse les deux domaines intuis (403) : `scripts/probe.mjs` est à
+  lancer depuis une machine qui a le réseau.

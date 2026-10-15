@@ -1,0 +1,16 @@
+{
+  "body": [
+    {
+      "beg_time": 1767265200,
+      "step_time": 86400,
+      "value": [
+        [null, null, 14245, 7694],
+        [null, null, 12001, 6120],
+        [null, 3020, null, null]
+      ]
+    }
+  ],
+  "status": "ok",
+  "time_exec": 0.08,
+  "time_server": 1767600000
+}
