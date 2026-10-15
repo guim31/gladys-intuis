@@ -1,0 +1,129 @@
+{
+  "status": "ok",
+  "time_server": 1767196800,
+  "body": {
+    "home": {
+      "id": "5e8a1c2b3d4f5a6b7c8d9e0f",
+      "modules": [
+        {
+          "id": "70:ee:50:00:00:01",
+          "type": "NMG",
+          "firmware_revision": 161,
+          "hardware_version": 2,
+          "wifi_strength": 62,
+          "outdoor_temperature": 6.5,
+          "therm_setpoint_default_duration": 180
+        },
+        {
+          "id": "f4:ce:36:00:a1:b2:c3:01",
+          "type": "NMR",
+          "bridge": "70:ee:50:00:00:01",
+          "firmware_revision": 33554435,
+          "last_seen": 1767196700
+        },
+        {
+          "id": "00:00:00:00:a1:b2:c3:01",
+          "type": "NMH",
+          "bridge": "70:ee:50:00:00:01",
+          "last_seen": 1767196700,
+          "reachable": true,
+          "muller_type": "IOT",
+          "radiator_state": "heating",
+          "offload": false,
+          "presence_sensor": true
+        },
+        {
+          "id": "00:00:00:00:a1:b2:c3:02",
+          "type": "NMH",
+          "bridge": "70:ee:50:00:00:01",
+          "last_seen": 1767196690,
+          "reachable": true,
+          "muller_type": "IOT",
+          "radiator_state": "idle",
+          "offload": false,
+          "presence_sensor": true
+        },
+        {
+          "id": "00:00:00:00:a1:b2:c3:03",
+          "type": "NMH",
+          "bridge": "70:ee:50:00:00:01",
+          "last_seen": 1767196650,
+          "reachable": true,
+          "muller_type": "IOT",
+          "radiator_state": "idle",
+          "offload": false,
+          "presence_sensor": true
+        },
+        {
+          "id": "00:00:00:00:a1:b2:c3:04",
+          "type": "NMH",
+          "bridge": "70:ee:50:00:00:01",
+          "last_seen": 1767196600,
+          "reachable": true,
+          "muller_type": "FPN"
+        },
+        {
+          "id": "00:00:00:00:a1:b2:c3:05",
+          "type": "NMH",
+          "bridge": "70:ee:50:00:00:01",
+          "last_seen": 1767100000,
+          "reachable": false,
+          "muller_type": "IOT",
+          "radiator_state": "idle"
+        }
+      ],
+      "rooms": [
+        {
+          "id": "2140019301",
+          "therm_measured_temperature": 19.5,
+          "therm_setpoint_temperature": 20,
+          "therm_setpoint_mode": "home",
+          "therm_setpoint_start_time": 1767160200,
+          "therm_setpoint_end_time": 0,
+          "anticipating": false,
+          "open_window": false,
+          "presence": true,
+          "boost_status": "disabled",
+          "muller_type": "IOT",
+          "reachable": true
+        },
+        {
+          "id": "2140019302",
+          "therm_measured_temperature": 18.1,
+          "therm_setpoint_temperature": 21,
+          "therm_setpoint_mode": "manual",
+          "therm_setpoint_start_time": 1767193200,
+          "therm_setpoint_end_time": 1767204000,
+          "anticipating": false,
+          "open_window": true,
+          "presence": false,
+          "boost_status": "disabled",
+          "muller_type": "IOT",
+          "reachable": true
+        },
+        {
+          "id": "2140019303",
+          "therm_measured_temperature": 21.2,
+          "therm_setpoint_temperature": 7,
+          "therm_setpoint_mode": "hg",
+          "therm_setpoint_end_time": 0,
+          "muller_type": "FPN",
+          "reachable": true
+        },
+        {
+          "id": "2140019304",
+          "therm_measured_temperature": 17,
+          "therm_setpoint_temperature": 16,
+          "therm_setpoint_mode": "away",
+          "therm_setpoint_end_time": 0,
+          "anticipating": false,
+          "open_window": false,
+          "presence": false,
+          "boost_status": "disabled",
+          "muller_type": "IOT",
+          "reachable": false
+        }
+      ]
+    }
+  }
+}

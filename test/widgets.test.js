@@ -1,77 +1,116 @@
+// -----------------------------------------------------------------------------
+// The `rooms` dashboard widget: content within the core budget, the rows,
+// the home mode buttons and their action.
+// -----------------------------------------------------------------------------
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validateWidgetContent } from '@gladysassistant/integration-sdk';
-import { createFakeGladys } from '@gladysassistant/integration-sdk/testing';
-import { buildDiscoveredDevices } from '../src/devices/index.js';
-import { simulateLanSession } from '../src/devices/plug.js';
-import { DEMO_STATUS_WIDGET, WIDGETS, refreshWidgets } from '../src/widgets.js';
-import { normalizeConfig } from '../src/config.js';
+import { formatTemperature, roomRow } from '../src/widgets.js';
+import { createWorld, deviceNamed } from './helpers/world.js';
 
-const gladys = createFakeGladys();
-const config = normalizeConfig();
-const demoStatus = WIDGETS[DEMO_STATUS_WIDGET];
+const NOW = Date.UTC(2026, 0, 10, 8, 0, 0);
 
-// What the SDK passes to onWidgetGet, plus the config index.js adds.
-const getContent = (cfg = config) =>
-  demoStatus.get(gladys, { settings: {}, language: 'en', units: 'metric', config: cfg });
-
-test('the demo_status content is rendered exactly as sent', async () => {
-  // [] = nothing the core would drop, truncate or trim to the content budget.
-  assert.deepEqual(validateWidgetContent(await getContent()), []);
-});
-
-test('the degraded plug connection content is valid too', async () => {
-  simulateLanSession(false);
+test('the content: the home, every room, three mode buttons, within the budget', async () => {
+  const world = await createWorld({ now: () => NOW });
   try {
-    const content = await getContent();
-    assert.deepEqual(validateWidgetContent(content), []);
-    const status = content.components.find((component) => component.type === 'status');
-    assert.ok(
-      status.items.some((item) => item.color === 'warning'),
-      'degraded shows a warning',
+    for (const language of ['en', 'fr', 'de', 'es']) {
+      const ack = await world.gladys.fake.widgetGet('rooms', { language });
+      assert.equal(ack.success, true);
+      const { content } = ack.data;
+      assert.deepEqual(validateWidgetContent(content), [], language);
+      const types = content.components.map((component) => component.type);
+      assert.deepEqual(types, ['text', 'status', 'button', 'button', 'button']);
+    }
+    const { content } = (await world.gladys.fake.widgetGet('rooms', { language: 'fr' })).data;
+    assert.equal(content.components[0].text, 'Mon domicile · Planning · Semaine type');
+    const rows = content.components[1].items;
+    assert.deepEqual(
+      rows.map((row) => [row.label, row.value]),
+      [
+        ['Salon', '19,5 → 20 °C'],
+        ['Chambre parentale', '18,1 → 21 °C · manuel · fenêtre ouverte'],
+        ['Salle de bain', '21,2 → 7 °C · hors-gel'],
+        ['Bureau', '17 → 16 °C · absence · hors ligne'],
+      ],
+    );
+    // The active mode is marked by its icon, not by the style (dark mode).
+    const buttons = content.components.slice(2);
+    assert.deepEqual(
+      buttons.map((button) => [button.label, button.icon, button.style]),
+      [
+        ['Planning', 'check-circle', undefined],
+        ['Absence', 'log-out', undefined],
+        ['Hors-gel', 'shield', undefined],
+      ],
     );
   } finally {
-    simulateLanSession(true);
+    await world.app.stop();
   }
 });
 
-test('the live tiles reference features the integration publishes', async () => {
-  const featureIds = new Set(
-    buildDiscoveredDevices(gladys, config).flatMap((device) =>
-      device.features.map((feature) => feature.external_id),
-    ),
-  );
-  const liveTiles = (await getContent()).components.filter((c) => c.device_feature);
-  assert.ok(liveTiles.length > 0, 'the template demonstrates a device-bound tile');
-  for (const tile of liveTiles) {
-    assert.ok(featureIds.has(tile.device_feature), `unknown feature ${tile.device_feature}`);
+test('a button sets the home mode and the widget shows it', async () => {
+  const world = await createWorld({ now: () => NOW });
+  try {
+    const ack = await world.gladys.fake.widgetAction('rooms', 'home_away');
+    assert.equal(ack.success, true);
+    assert.equal(ack.data.message, 'Mode de la maison : Absence.');
+    const write = world.intuis.requests.find((request) => request.path === '/api/setthermmode');
+    assert.equal(write.body.mode, 'away');
+    const { content } = (await world.gladys.fake.widgetGet('rooms', { language: 'en' })).data;
+    const away = content.components.find((component) => component.label === 'Away');
+    assert.equal(away.icon, 'check-circle');
+    // Rooms following the home now read "away".
+    assert.match(content.components[1].items[0].value, /away/);
+  } finally {
+    await world.app.stop();
   }
 });
 
-test('every button action of the content is handled and answers a short toast', async () => {
-  const buttons = (await getContent()).components.filter((c) => c.type === 'button' && c.action);
-  assert.ok(buttons.length > 0, 'the template demonstrates a widget action');
-  for (const { action } of buttons) {
-    const message = await demoStatus.action(gladys, {
-      actionKey: action.key,
-      params: action.params ?? {},
-      settings: {},
-      config,
+test('the home setting accepts the home device or one of its rooms', async () => {
+  const world = await createWorld({ now: () => NOW });
+  try {
+    const room = deviceNamed(world, 'Bureau').external_id;
+    const ack = await world.gladys.fake.widgetGet('rooms', {
+      settings: { home: room },
+      language: 'en',
     });
-    assert.ok(message.en, 'the toast carries at least the mandatory `en` text');
-    assert.ok(message.en.length <= 200, 'toasts are capped at 200 characters');
+    assert.match(ack.data.content.components[0].text, /^Mon domicile/);
+  } finally {
+    await world.app.stop();
   }
 });
 
-test('an unknown widget action fails, so the user sees the error', async () => {
-  await assert.rejects(
-    demoStatus.action(gladys, { actionKey: 'unknown', params: {}, settings: {}, config }),
-    /Unknown widget action/,
-  );
+test('not configured, or cloud unreachable: one sentence', async () => {
+  const empty = await createWorld({ config: {} });
+  try {
+    const { content } = (await empty.gladys.fake.widgetGet('rooms', { language: 'de' })).data;
+    assert.deepEqual(validateWidgetContent(content), []);
+    assert.match(content.components[0].text, /intuis-Connect-Konto/);
+  } finally {
+    await empty.app.stop();
+  }
+
+  const down = await createWorld({ cloudOptions: {} });
+  try {
+    down.intuis.failure = 'network';
+    down.hub.homes = [];
+    const { content } = (await down.gladys.fake.widgetGet('rooms', { language: 'es' })).data;
+    assert.match(content.components[0].text, /nube de intuis no responde/);
+  } finally {
+    await down.app.stop();
+  }
 });
 
-test('refreshWidgets nudges every widget', () => {
-  const fresh = createFakeGladys();
-  refreshWidgets(fresh);
-  assert.deepEqual(fresh.fake.widgetRefreshes, Object.keys(WIDGETS));
+test('rows stay within 40 characters', () => {
+  const row = roomRow(
+    { name: 'Une pièce au nom vraiment très très long pour un widget' },
+    { temperature: 19.25, setpoint: 20.5, mode: 1, preset: 0, openWindow: true, reachable: true },
+    'fr',
+  );
+  assert.ok(row.label.length <= 40);
+  assert.ok(row.value.length <= 40, row.value);
+  assert.equal(formatTemperature(19.25, 'en'), '19.3');
+  assert.equal(formatTemperature(19.25, 'fr'), '19,3');
+  assert.equal(formatTemperature(null, 'fr'), '–');
 });

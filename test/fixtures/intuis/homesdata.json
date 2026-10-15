@@ -1,0 +1,170 @@
+{
+  "body": {
+    "homes": [
+      {
+        "id": "5e8a1c2b3d4f5a6b7c8d9e0f",
+        "name": "Mon domicile",
+        "altitude": 150,
+        "coordinates": [1.44, 43.6],
+        "country": "FR",
+        "timezone": "Europe/Paris",
+        "therm_mode": "schedule",
+        "therm_setpoint_default_duration": 180,
+        "therm_heating_priority": "comfort",
+        "rooms": [
+          {
+            "id": "2140019301",
+            "name": "Salon",
+            "type": "livingroom",
+            "module_ids": ["00:00:00:00:a1:b2:c3:01", "00:00:00:00:a1:b2:c3:02"]
+          },
+          {
+            "id": "2140019302",
+            "name": "Chambre parentale",
+            "type": "bedroom",
+            "module_ids": ["00:00:00:00:a1:b2:c3:03"]
+          },
+          {
+            "id": "2140019303",
+            "name": "Salle de bain",
+            "type": "bathroom",
+            "module_ids": ["00:00:00:00:a1:b2:c3:04"]
+          },
+          {
+            "id": "2140019304",
+            "name": "Bureau",
+            "type": "office",
+            "module_ids": ["00:00:00:00:a1:b2:c3:05"]
+          }
+        ],
+        "modules": [
+          {
+            "id": "70:ee:50:00:00:01",
+            "type": "NMG",
+            "name": "IntuitivGateway",
+            "setup_date": 1700000000,
+            "modules_bridged": [
+              "f4:ce:36:00:a1:b2:c3:01",
+              "f4:ce:36:00:a1:b2:c3:02",
+              "f4:ce:36:00:a1:b2:c3:03",
+              "f4:ce:36:00:a1:b2:c3:04",
+              "f4:ce:36:00:a1:b2:c3:05"
+            ]
+          },
+          {
+            "id": "f4:ce:36:00:a1:b2:c3:01",
+            "type": "NMR",
+            "setup_date": 1700000100,
+            "bridge": "70:ee:50:00:00:01"
+          },
+          {
+            "id": "00:00:00:00:a1:b2:c3:01",
+            "type": "NMH",
+            "name": "Radiateur salon fenêtre",
+            "setup_date": 1700000100,
+            "room_id": "2140019301",
+            "bridge": "70:ee:50:00:00:01",
+            "muller_type": "IOT",
+            "router_id": "f4:ce:36:00:a1:b2:c3:01"
+          },
+          {
+            "id": "00:00:00:00:a1:b2:c3:02",
+            "type": "NMH",
+            "name": "Radiateur salon couloir",
+            "setup_date": 1700000200,
+            "room_id": "2140019301",
+            "bridge": "70:ee:50:00:00:01",
+            "muller_type": "IOT",
+            "router_id": "f4:ce:36:00:a1:b2:c3:02"
+          },
+          {
+            "id": "00:00:00:00:a1:b2:c3:03",
+            "type": "NMH",
+            "name": "Radiateur chambre",
+            "setup_date": 1700000300,
+            "room_id": "2140019302",
+            "bridge": "70:ee:50:00:00:01",
+            "muller_type": "IOT",
+            "router_id": "f4:ce:36:00:a1:b2:c3:03"
+          },
+          {
+            "id": "00:00:00:00:a1:b2:c3:04",
+            "type": "NMH",
+            "name": "Sèche-serviettes",
+            "setup_date": 1700000400,
+            "room_id": "2140019303",
+            "bridge": "70:ee:50:00:00:01",
+            "muller_type": "FPN",
+            "router_id": "f4:ce:36:00:a1:b2:c3:04"
+          },
+          {
+            "id": "00:00:00:00:a1:b2:c3:05",
+            "type": "NMH",
+            "name": "Radiateur bureau",
+            "setup_date": 1700000500,
+            "room_id": "2140019304",
+            "bridge": "70:ee:50:00:00:01",
+            "muller_type": "IOT",
+            "router_id": "f4:ce:36:00:a1:b2:c3:05"
+          }
+        ],
+        "schedules": [
+          {
+            "id": "65a1b2c3d4e5f60718293a4b",
+            "name": "Semaine type",
+            "type": "therm",
+            "selected": true,
+            "default": false,
+            "away_temp": 16,
+            "hg_temp": 7,
+            "timetable": [
+              { "zone_id": 1, "m_offset": 0 },
+              { "zone_id": 0, "m_offset": 390 },
+              { "zone_id": 1, "m_offset": 1350 }
+            ],
+            "zones": [
+              { "id": 0, "name": "Confort", "type": 0 },
+              { "id": 1, "name": "Nuit", "type": 1 }
+            ]
+          },
+          {
+            "id": "65a1b2c3d4e5f60718293a4c",
+            "name": "Vacances scolaires",
+            "type": "therm",
+            "selected": false,
+            "away_temp": 16,
+            "hg_temp": 7
+          },
+          {
+            "id": "65a1b2c3d4e5f60718293a4d",
+            "name": "Heures creuses",
+            "type": "electricity",
+            "selected": true,
+            "tariff": "edf_hp_hc",
+            "contract_power_unit": "kVA",
+            "power_threshold": 9
+          }
+        ]
+      },
+      {
+        "id": "5e8a1c2b3d4f5a6b7c8d9e10",
+        "name": "Maison de vacances",
+        "timezone": "Europe/Paris",
+        "therm_mode": "schedule",
+        "rooms": [],
+        "modules": []
+      }
+    ],
+    "user": {
+      "email": "utilisateur@example.com",
+      "language": "fr-FR",
+      "locale": "fr-FR",
+      "country": "FR",
+      "unit_system": 0,
+      "id": "5e8a00000000000000000001"
+    }
+  },
+  "status": "ok",
+  "time_exec": 0.041,
+  "time_server": 1767196800
+}

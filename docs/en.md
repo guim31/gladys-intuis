@@ -1,61 +1,143 @@
-# Demo Devices Template
+# Muller Intuitiv (intuis)
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+## Overview
 
-## What you get
+This integration controls **Muller Intuitiv connected radiators** from Gladys: the Muller, Campa,
+Airelec, Applimo or Noirot radiators fitted with the connected module and set up with the **intuis
+Connect** app (formerly "Muller Intuitiv with Netatmo"). It goes through the intuis cloud, like the
+app: Gladys sees what the app sees, and what you change in Gladys shows in the app.
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+For each room: the measured temperature, the setpoint, the mode (schedule or manual), the heating
+preset (schedule, away, frost protection), whether it heats right now, the open window detection,
+the presence and the electricity consumed when your radiators measure it. For the home: the home
+mode and the active weekly schedule.
+
+Independent integration, not affiliated with Muller, Groupe Atlantic or intuis. **Developed without
+the hardware**: it relies on the API documented by community projects (Home Assistant, Jeedom,
+Node-RED). Feedback is welcome on the Gladys forum or in the GitHub issues.
+
+## Requirements
+
+- Gladys **5.2.0** or newer.
+- Radiators already installed and set up in the **intuis Connect** app, with their gateway online.
+- The e-mail and the password of your intuis Connect account.
 
 ## Configuration
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
+1. In Gladys, open **Integrations**, install **Muller Intuitiv (intuis)**, then open its
+   **Configuration** tab.
+2. Enter the **e-mail** and the **password** of the intuis Connect app, then save. The connection
+   status shows at the top of the screen.
+3. The **Test the connection** button tells how many homes and rooms were found.
+4. Open the **Discovery** tab: every room and the home are listed. Add the ones you want.
 
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
+Optional settings:
 
-## Actions
+- **Duration of a setpoint set from Gladys**: how long a temperature chosen in Gladys holds before
+  the room returns to its schedule, like the "+" and "-" of the app. By default, the duration set
+  in the intuis app.
+- **Track the consumption of each room**: on by default.
+- **Language of the feature names**: French by default. Names are fixed when a device is added: a
+  change applies to the devices added afterwards.
 
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+The password stays in Gladys and is only sent to intuis to sign in. The integration keeps in its
+`/data` folder the session tokens intuis hands over, never the password.
+
+## Devices
+
+### The home
+
+| Feature             | What it does                                                                  |
+| ------------------- | ----------------------------------------------------------------------------- |
+| **Home mode**       | Schedule, Away or Frost protection, for the whole home. Settable from Gladys. |
+| **Active schedule** | The name of the weekly schedule chosen in the app (read only).                |
+
+### Each room
+
+| Feature                | What it does                                                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Temperature**        | The temperature measured by the radiators of the room.                                                                                                |
+| **Setpoint**           | The target temperature, 7 to 30 °C by half a degree. Changing it from Gladys holds it for the chosen duration, then the room returns to its schedule. |
+| **Schedule or manual** | "Auto" while the room follows its schedule, "Heating" while a manual setpoint holds. Choosing "Auto" hands the room back to its schedule.             |
+| **Heating preset**     | Schedule, Away or Frost protection for this room only. During a manual setpoint, it shows what resumes afterwards.                                    |
+| **Heating**            | Whether a radiator of the room heats right now. Only when the radiators report it (not on a pilot wire).                                              |
+| **Open window**        | The open window detection of the radiators: "Open" when a sudden temperature drop stopped the heating.                                                |
+| **Presence**           | The built-in presence sensor, on the radiators that have one.                                                                                         |
+| **Consumption**        | The electricity used by the room, per half hour (or per day when intuis only gives the daily total), fed to the energy monitoring of Gladys.          |
+
+**Heating**, **Open window**, **Presence** and **Consumption** only show when your radiators provide
+them. When one appears later (the consumption may take a day to come up), the Discovery tab offers
+**Update** on the room.
+
+Turning a room completely off is not offered: a radiator switched off by mistake in winter can let a
+pipe freeze. **Frost protection** is the safe stop; turning off stays possible in the app.
+
+The consumption goes into the **Energy** tab of Gladys: attach the rooms to your meter and your
+contract (flat rate, peak / off-peak…) to see its cost. Half-hour readings split peak and off-peak
+hours.
+
+## Widget
+
+Add the **Heating rooms** widget to a dashboard. It shows every room on one line (measured
+temperature → setpoint, mode, open window) and three buttons for the home mode: **Schedule**,
+**Away**, **Frost protection**. The current mode carries a check mark. With several homes, pick one
+in the widget settings.
 
 ## Scenes
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
+The integration declares no trigger: a temperature, an open window or a mode are device states the
+scene editor already watches ("When a device state changes").
 
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
+It adds one action, in the **Integrations** category of the scene editor:
 
-## Dashboard
+- **Set a room setpoint for a while**: pick the room, the temperature ("20.5", a scene variable is
+  accepted) and the duration. Then the room returns to its schedule. The action gives the time it
+  returns to the schedule to the next actions.
 
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+The device features can also be driven with the usual "Control a device" action: home mode,
+setpoint, heating preset of a room.
+
+## Scene examples
+
+- **Leaving home**: when the last person leaves, set the **Home mode** to **Away**; when someone
+  comes back, set it back to **Schedule**.
+- **Evening bath**: every day at 7 pm, **Set the setpoint** of the bathroom to 22.5 °C for 1 hour.
+- **Forgotten window**: when the **Open window** of the living room turns "Open", send a message;
+  the radiators already stop heating on their own.
+- **Holidays**: before leaving, set the **Home mode** to **Frost protection**.
+
+## Pace and quotas
+
+- The rooms and the home are read **every 5 minutes**, and a few seconds after each command. One
+  reading costs two requests to the intuis cloud.
+- The consumption is read **once an hour**, one request per added room that provides it. intuis
+  completes it late: allow up to a day for the current day.
+- intuis publishes no quota. Its API is Netatmo's, whose documented limit is 500 requests per hour
+  and per account: the integration makes about 30 for one home. When intuis asks to slow down, the
+  readings stop for 15 minutes.
+- After a refused password, the integration waits 30 minutes before trying again, so it never locks
+  the account. Saving the configuration or clicking **Test the connection** tries again at once.
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **"intuis refused the e-mail or the password"**: check them by signing in to the intuis Connect
+  app, then save the configuration again.
+- **"The intuis cloud does not answer"**: the intuis service or your Internet connection is down.
+  The devices turn "unreachable" and everything resumes on its own.
+- **A room shows offline**: its radiator no longer talks to the gateway (power cut, module
+  unplugged). Check it in the app.
+- **The setpoint goes back by itself**: the chosen duration is over and the room resumes its
+  schedule. Lengthen the **Duration of a setpoint set from Gladys**.
+- **No consumption**: not every radiator measures it (pilot-wire ones in particular). The
+  integration asks again once a week.
+- For more details, add `LOG_LEVEL=debug` to the variables of the integration and read its logs:
+  they never show the password or the tokens.
+
+## Limitations
+
+- Developed **without the hardware nor an intuis account**: the exchanges with the cloud follow the
+  community projects and were not tried on a real installation by the author.
+- Goes through the cloud: without Internet, or if intuis changes its API, nothing comes up anymore.
+- The weekly schedule is edited in the intuis app, not in Gladys.
+- No complete stop of a room from Gladys (see above), and no "boost" mode.
+- The consumption arrives late and only some radiators provide it.
