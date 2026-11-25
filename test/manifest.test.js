@@ -40,6 +40,7 @@ const CAPABILITY_MIN_GLADYS_VERSION = [5, 1, 0];
 // (checked with `git show v5.2.0:server/utils/constants.js`).
 const THERMOSTAT_PRESET_MIN_GLADYS_VERSION = [5, 2, 0];
 const CATEGORIES_MIN_GLADYS_VERSION = [4, 86, 0];
+const COUNTRIES_MIN_GLADYS_VERSION = [5, 3, 0];
 
 const keysOf = (list) => (list ?? []).map((entry) => entry.key);
 
@@ -228,4 +229,13 @@ test('field placeholders are multi-language objects', () => {
     assert.equal(typeof field.placeholder, 'object', `field "${field.key}": placeholder`);
     assert.ok(field.placeholder.en, `field "${field.key}": placeholder needs an English text`);
   }
+});
+
+test('the catalog countries: France, which needs Gladys >= 5.3.0', () => {
+  // intuis Connect serves the Muller Intuitiv radiators sold in France.
+  assert.deepEqual(manifest.countries, ['FR']);
+  assert.ok(
+    isAtLeast(minGladysVersion(), COUNTRIES_MIN_GLADYS_VERSION),
+    `countries requires gladys_version >= 5.3.0, got "${manifest.gladys_version}"`,
+  );
 });

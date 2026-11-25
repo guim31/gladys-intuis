@@ -18,7 +18,7 @@ Node-RED). Feedback is welcome on the Gladys forum or in the GitHub issues.
 
 ## Requirements
 
-- Gladys **5.2.0** or newer.
+- Gladys **5.3.0** or newer.
 - Radiators already installed and set up in the **intuis Connect** app, with their gateway online.
 - The e-mail and the password of your intuis Connect account.
 

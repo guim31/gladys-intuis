@@ -37,8 +37,8 @@ stop, turning off stays in the intuis app.
 
 ## Requirements
 
-- Gladys Assistant **5.2.0** or later (thermostat preset type, dated energy consumption, widgets and
-  scene actions).
+- Gladys Assistant **5.3.0** or later (catalog countries; 5.2.0 for the thermostat preset type, dated
+  energy consumption, widgets and scene actions).
 - Radiators set up in the intuis Connect app, with the gateway online.
 - The e-mail and the password of the intuis Connect account.
 
