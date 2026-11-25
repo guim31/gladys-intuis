@@ -74,9 +74,9 @@ test/fixtures/intuis/             cloud answers (anonymized), gladys-feature-tab
   catalog `description` holds 10 to 100 characters per language. A field the
   older cores do not know needs a higher `gladys_version` minimum
   (`categories`: 4.86.0; `widgets`, `scene_triggers`, `scene_actions`,
-  `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
-  code (defaults, action, scene and widget handlers): change both sides
-  together.
+  `type: "provider"`: 5.1.0; `keywords`, `countries`: 5.3.0).
+  `test/manifest.test.js` ties the manifest to the code (defaults, action,
+  scene and widget handlers): change both sides together.
 - **User-facing text** is in four languages (English, French, German with
   "du", Spanish with "usted"): action messages, manifest texts, feature names,
   widget texts, and `docs/en.md`, `docs/fr.md`, `docs/de.md`, `docs/es.md`

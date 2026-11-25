@@ -18,7 +18,7 @@ Node-RED). Sus comentarios son bienvenidos en el foro de Gladys o en las inciden
 
 ## Requisitos
 
-- Gladys **5.2.0** o más reciente.
+- Gladys **5.3.0** o más reciente.
 - Radiadores ya instalados y configurados en la app **intuis Connect**, con su pasarela conectada.
 - El correo electrónico y la contraseña de su cuenta intuis Connect.
 

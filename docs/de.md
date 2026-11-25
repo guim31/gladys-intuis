@@ -18,7 +18,7 @@ Jeedom, Node-RED). Rückmeldungen sind im Gladys-Forum oder in den GitHub-Issues
 
 ## Voraussetzungen
 
-- Gladys **5.2.0** oder neuer.
+- Gladys **5.3.0** oder neuer.
 - Heizkörper, die bereits in der App **intuis Connect** eingerichtet sind, mit verbundenem Gateway.
 - E-Mail-Adresse und Passwort deines intuis-Connect-Kontos.
 

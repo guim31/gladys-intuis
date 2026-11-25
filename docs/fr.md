@@ -19,7 +19,7 @@ Jeedom, Node-RED). Vos retours sont les bienvenus sur le forum de Gladys ou dans
 
 ## Ce qu'il vous faut
 
-- Gladys **5.2.0** ou plus récent.
+- Gladys **5.3.0** ou plus récent.
 - Des radiateurs déjà installés et réglés dans l'appli **intuis Connect**, avec leur passerelle
   connectée à Internet.
 - L'adresse e-mail et le mot de passe de votre compte intuis Connect.
